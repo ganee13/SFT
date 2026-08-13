@@ -4,17 +4,37 @@ import math as m
 
 st.set_page_config(page_title="AI Readiness Assessment", layout="wide", page_icon="🤖")
 
-# Connection: works both in Snowflake (get_active_session) and Streamlit Community Cloud (st.connection)
-@st.cache_resource
-def get_snowflake_session():
-    try:
-        from snowflake.snowpark.context import get_active_session
-        return get_active_session()
-    except Exception:
-        conn = st.connection("snowflake")
-        return conn.session()
+# Connection: works both in Snowflake (get_active_session) and Streamlit Community Cloud (snowflake-connector-python)
+_USE_SNOWPARK = False
+_session = None
+_conn = None
 
-session = get_snowflake_session()
+try:
+    from snowflake.snowpark.context import get_active_session
+    _session = get_active_session()
+    _USE_SNOWPARK = True
+except Exception:
+    _conn = st.connection("snowflake")
+
+
+def run_sql(query, params=None):
+    """Execute SQL and return list of dicts. Works in both environments."""
+    if _USE_SNOWPARK:
+        if params:
+            result = _session.sql(query, params=params).collect()
+        else:
+            result = _session.sql(query).collect()
+        return [row.as_dict() if hasattr(row, 'as_dict') else dict(row) for row in result]
+    else:
+        with _conn.raw_connection.cursor() as cur:
+            if params:
+                cur.execute(query.replace("?", "%s"), params)
+            else:
+                cur.execute(query)
+            if cur.description:
+                cols = [desc[0] for desc in cur.description]
+                return [dict(zip(cols, row)) for row in cur.fetchall()]
+            return []
 
 # -- Custom CSS --
 st.markdown("""
@@ -460,7 +480,7 @@ else:
 
     # Save to Snowflake table
     try:
-        session.sql("""
+        run_sql("""
             INSERT INTO AI_READINESS.PUBLIC.AI_READINESS_RESPONSES
             (NAME, EMAIL, COMPANY, ROLE, INDUSTRY, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q8_OTHER, Q9, Q10,
              STRATEGY_SCORE, GOVERNANCE_SCORE, DATA_TECH_SCORE, TOTAL_MATURITY, MATURITY_PCT, MATURITY_LEVEL)
@@ -473,7 +493,7 @@ else:
             r.get("q8_other", ""), r.get("q9", ""), r.get("q10", ""),
             strategy_score, governance_score, data_tech_score,
             total_maturity, pct, level
-        ]).collect()
+        ])
     except Exception:
         pass
 
@@ -600,13 +620,13 @@ else:
             industry_val = r.get("industry", "")
             if industry_val:
                 escaped_industry = industry_val.replace("'", "''")
-                peer_result = session.sql(f"""
+                peer_result = run_sql(f"""
                     SELECT
                         COUNT(*) AS total_peers,
                         SUM(CASE WHEN TOTAL_MATURITY < {total_maturity} THEN 1 ELSE 0 END) AS below_you
                     FROM AI_READINESS.PUBLIC.AI_READINESS_RESPONSES
                     WHERE INDUSTRY = '{escaped_industry}'
-                """).collect()
+                """)
                 total_peers = peer_result[0]["TOTAL_PEERS"]
                 below_you = peer_result[0]["BELOW_YOU"]
                 if total_peers > 1:
@@ -683,7 +703,7 @@ else:
         try:
             escaped_prompt = prompt.replace("'", "''")
             sql_query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('mistral-large2', '{escaped_prompt}') AS RESPONSE"
-            ai_result = session.sql(sql_query).collect()
+            ai_result = run_sql(sql_query)
             ai_insights = ai_result[0]["RESPONSE"] if ai_result else ""
             if ai_insights:
                 st.markdown("### 🤖 AI-Powered Holistic Analysis")
