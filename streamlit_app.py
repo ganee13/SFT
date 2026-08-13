@@ -7,14 +7,29 @@ st.set_page_config(page_title="AI Readiness Assessment", layout="wide", page_ico
 # Connection: works both in Snowflake (get_active_session) and Streamlit Community Cloud (snowflake-connector-python)
 _USE_SNOWPARK = False
 _session = None
-_conn = None
+_connector_conn = None
 
 try:
     from snowflake.snowpark.context import get_active_session
     _session = get_active_session()
     _USE_SNOWPARK = True
 except Exception:
-    _conn = st.connection("snowflake")
+    import snowflake.connector
+
+    @st.cache_resource
+    def _init_connector():
+        cfg = st.secrets["connections"]["snowflake"]
+        return snowflake.connector.connect(
+            account=cfg["account"],
+            user=cfg["user"],
+            password=cfg["password"],
+            role=cfg.get("role", ""),
+            warehouse=cfg.get("warehouse", ""),
+            database=cfg.get("database", ""),
+            schema=cfg.get("schema", ""),
+        )
+
+    _connector_conn = _init_connector()
 
 
 def run_sql(query, params=None):
@@ -26,7 +41,8 @@ def run_sql(query, params=None):
             result = _session.sql(query).collect()
         return [row.as_dict() if hasattr(row, 'as_dict') else dict(row) for row in result]
     else:
-        with _conn.raw_connection.cursor() as cur:
+        cur = _connector_conn.cursor()
+        try:
             if params:
                 cur.execute(query.replace("?", "%s"), params)
             else:
@@ -35,6 +51,8 @@ def run_sql(query, params=None):
                 cols = [desc[0] for desc in cur.description]
                 return [dict(zip(cols, row)) for row in cur.fetchall()]
             return []
+        finally:
+            cur.close()
 
 # -- Custom CSS --
 st.markdown("""
