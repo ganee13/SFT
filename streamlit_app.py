@@ -176,6 +176,16 @@ st.markdown("""
     .stButton > button[kind="primary"]:hover, .stButton > button[data-testid="stBaseButton-primary"]:hover {
         background-color: #6bc648 !important;
     }
+    /* Download button styling */
+    .stDownloadButton > button {
+        background-color: #7ED957 !important;
+        color: #000000 !important;
+        border: none !important;
+        font-weight: 700 !important;
+    }
+    .stDownloadButton > button:hover {
+        background-color: #6bc648 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -422,6 +432,16 @@ if not st.session_state.quiz_submitted:
 # RESULTS PAGE
 # ============================================================
 else:
+    # Scroll to top when results load
+    import streamlit.components.v1 as components
+    components.html(
+        """<script>
+        window.parent.document.querySelector('section.main').scrollTop = 0;
+        window.parent.document.querySelector('[data-testid="stAppViewContainer"]').scrollTop = 0;
+        </script>""",
+        height=0
+    )
+
     r = st.session_state.responses
 
     # Scoring function
@@ -552,7 +572,7 @@ else:
         data_pct = data_tech_score / 8 * 100
 
         # SVG radar chart - equilateral triangle with 3 axes
-        cx, cy, radius = 150, 140, 110
+        cx, cy, radius = 200, 160, 90
         angles = [-90, 30, 150]
         axis_pts = [(cx + radius * m.cos(m.radians(a)), cy + radius * m.sin(m.radians(a))) for a in angles]
         data_pts = [(cx + radius * (v/100) * m.cos(m.radians(a)), cy + radius * (v/100) * m.sin(m.radians(a)))
@@ -567,11 +587,11 @@ else:
         axes_svg = "".join([f'<line x1="{cx}" y1="{cy}" x2="{p[0]}" y2="{p[1]}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>' for p in axis_pts])
         data_polygon = " ".join([f"{p[0]},{p[1]}" for p in data_pts])
 
-        label_offset = 18
+        label_offset = 30
         labels = [
-            (cx + (radius + label_offset) * m.cos(m.radians(-90)), cy + (radius + label_offset) * m.sin(m.radians(-90)) - 4, "Strategy & Leadership", f"{strat_pct:.0f}%"),
-            (cx + (radius + label_offset) * m.cos(m.radians(30)) + 10, cy + (radius + label_offset) * m.sin(m.radians(30)) + 8, "Governance & Talent", f"{gov_pct:.0f}%"),
-            (cx + (radius + label_offset) * m.cos(m.radians(150)) - 10, cy + (radius + label_offset) * m.sin(m.radians(150)) + 8, "Data & Technology", f"{data_pct:.0f}%"),
+            (cx, cy + (radius + label_offset) * m.sin(m.radians(-90)) - 10, "Strategy & Leadership", f"{strat_pct:.0f}%"),
+            (cx + (radius + label_offset) * m.cos(m.radians(30)) + 20, cy + (radius + label_offset) * m.sin(m.radians(30)) + 16, "Governance & Talent", f"{gov_pct:.0f}%"),
+            (cx + (radius + label_offset) * m.cos(m.radians(150)) - 20, cy + (radius + label_offset) * m.sin(m.radians(150)) + 16, "Data & Technology", f"{data_pct:.0f}%"),
         ]
 
         labels_svg = ""
@@ -581,12 +601,12 @@ else:
                 anchor = "start"
             elif "Data" in name:
                 anchor = "end"
-            labels_svg += f'<text x="{lx}" y="{ly}" text-anchor="{anchor}" font-size="11" font-weight="bold" fill="#ffffff">{name}</text>'
-            labels_svg += f'<text x="{lx}" y="{ly + 14}" text-anchor="{anchor}" font-size="11" font-weight="600" fill="#7ED957">{val}</text>'
+            labels_svg += f'<text x="{lx}" y="{ly}" text-anchor="{anchor}" font-size="12" font-weight="bold" fill="#ffffff">{name}</text>'
+            labels_svg += f'<text x="{lx}" y="{ly + 16}" text-anchor="{anchor}" font-size="12" font-weight="600" fill="#7ED957">{val}</text>'
 
         radar_svg = f"""
         <div style="display: flex; justify-content: center; margin: 16px 0; padding: 24px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
-            <svg width="320" height="340" viewBox="0 0 300 310" xmlns="http://www.w3.org/2000/svg">
+            <svg width="100%" height="320" viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
                 {grid_svg}
                 {axes_svg}
                 <polygon points="{data_polygon}" fill="rgba(126, 217, 87, 0.15)" stroke="#7ED957" stroke-width="2.5"/>
@@ -710,6 +730,7 @@ else:
             ai_result = run_sql(sql_query)
             ai_insights = ai_result[0]["RESPONSE"] if ai_result else ""
             if ai_insights:
+                st.session_state.ai_insights_text = ai_insights
                 st.markdown("### 🤖 AI-Powered Holistic Analysis")
                 st.markdown('<span style="font-size: 12px; color: #7ED957; font-weight: 600;">✨ Powered by Snowflake Cortex</span>', unsafe_allow_html=True)
                 st.markdown(f"""
@@ -717,7 +738,7 @@ else:
                     <div style="font-size: 11px; color: #7ED957; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">🧠 Cortex AI Analysis</div>
                     <div style="font-size: 14px; color: #e0e0e0; line-height: 1.7;">{ai_insights}</div>
                 </div>
-                """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
         except Exception as e:
             st.warning(f"⚠️ AI analysis unavailable: {e}")
 
@@ -760,3 +781,66 @@ else:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    # --- Download Results ---
+    st.markdown("---")
+    st.markdown("### 📥 Export Results")
+
+    # Generate plain-text report (no external dependencies)
+    ai_text_for_report = st.session_state.get("ai_insights_text", "")
+    report_lines = [
+        "=" * 50,
+        "AI READINESS ASSESSMENT - RESULTS REPORT",
+        "=" * 50,
+        "",
+        "RESPONDENT",
+        "-" * 30,
+        f"Name:     {r.get('name', '')}",
+        f"Email:    {r.get('email', '')}",
+        f"Company:  {r.get('company', '')}",
+        f"Role:     {r.get('role', '')}",
+        f"Industry: {r.get('industry', '')}",
+        "",
+        "MATURITY LEVEL",
+        "-" * 30,
+        f"Level: {level}",
+        f"{level_desc}",
+        "",
+        "SCORES",
+        "-" * 30,
+        f"Overall:              {total_maturity}/{max_maturity} ({pct:.0f}%)",
+        f"Strategy & Leadership: {strategy_score}/8",
+        f"Governance & Talent:   {governance_score}/12",
+        f"Data & Technology:     {data_tech_score}/8",
+        "",
+    ]
+
+    if insights:
+        report_lines.append("KEY INSIGHTS")
+        report_lines.append("-" * 30)
+        for icon, title, desc, _ in insights:
+            report_lines.append(f"  {icon} {title}")
+            report_lines.append(f"    {desc}")
+            report_lines.append("")
+
+    if ai_text_for_report:
+        report_lines.append("")
+        report_lines.append("AI-POWERED ANALYSIS")
+        report_lines.append("-" * 30)
+        report_lines.append(ai_text_for_report)
+        report_lines.append("")
+
+    report_lines.extend([
+        "",
+        "=" * 50,
+        "Generated by AI Readiness Assessment | Deloitte x Snowflake",
+    ])
+
+    report_text = "\n".join(report_lines)
+
+    st.download_button(
+        label="📄 Download Results",
+        data=report_text,
+        file_name=f"AI_Readiness_{r.get('name', 'Report').replace(' ', '_')}.txt",
+        mime="text/plain"
+    )
