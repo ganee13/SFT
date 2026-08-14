@@ -75,13 +75,9 @@ _header_bg_css = f'background: #000000 url("data:image/png;base64,{_header_b64}"
 _page_bg_css = f'background: #1a1a2e url("data:image/png;base64,{_bg_b64}") top center/cover no-repeat fixed;' if _bg_b64 else 'background: #1a1a2e;'
 st.markdown("""
 <style>
-    .stApp { """ + _page_bg_css + """ }
-    [data-testid="stHeader"] { background: transparent; }
-    /* Make entire page scroll instead of inner container */
-    [data-testid="stAppViewContainer"] { overflow: visible; }
-    [data-testid="stMain"] { overflow: visible; }
-    .main .block-container { overflow: visible; max-width: 100%; }
-    section[data-testid="stSidebar"] { display: none; }
+    .stApp { background: #000000; }
+    [data-testid="stHeader"] { background: #000000; }
+    .main .block-container { padding-top: 0; }
     /* Override Streamlit text colors for dark background */
     .stApp, .stApp p, .stApp span, .stApp label, .stApp div { color: #ffffff; }
     .stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: #ffffff; }
@@ -91,29 +87,15 @@ st.markdown("""
     .stApp .stRadio label { color: #e0e0e0 !important; }
     .stApp .stRadio [data-testid="stMarkdownContainer"] p { color: #e0e0e0 !important; }
     hr { border-color: rgba(255,255,255,0.15) !important; }
-    .quiz-header {
-        background: transparent;
-        padding: 56px 40px; text-align: left;
-        border: none; margin-bottom: 32px;
-        position: relative; overflow: hidden;
-    }
-    .quiz-header::before {
-        content: none;
-    }
-    .quiz-header::after {
-        content: none;
-    }
     .quiz-title {
         font-size: 96px; font-weight: 900; color: #7ED957 !important; margin: 0 0 14px 0;
         text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        position: relative; z-index: 1;
     }
     .quiz-subtitle {
         font-size: 19px; color: #7ED957 !important; margin: 0; line-height: 1.6;
-        position: relative; z-index: 1;
     }
     .section-label {
-        font-size: 13px; font-weight: 700; color: #7ED957; text-transform: uppercase;
+        font-size: 13px; font-weight: 700; color: #7ED957 !important; text-transform: uppercase;
         letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 16px;
     }
     .question-card {
@@ -184,6 +166,16 @@ st.markdown("""
     }
     [data-testid="stMetric"] label { color: #7ED957 !important; }
     [data-testid="stMetric"] [data-testid="stMetricValue"] { color: #ffffff !important; }
+    /* Primary button styling */
+    .stButton > button[kind="primary"], .stButton > button[data-testid="stBaseButton-primary"] {
+        background-color: #7ED957 !important;
+        color: #000000 !important;
+        border: none !important;
+        font-weight: 700 !important;
+    }
+    .stButton > button[kind="primary"]:hover, .stButton > button[data-testid="stBaseButton-primary"]:hover {
+        background-color: #6bc648 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -194,17 +186,8 @@ if 'responses' not in st.session_state:
     st.session_state.responses = {}
 
 # -- Header --
-st.markdown("""
-<div class="quiz-header">
-    <p class="quiz-title">AI Readiness Assessment</p>
-    <p class="quiz-subtitle">Understand where your organization stands on the AI maturity curve — and what to do next.</p>
-    <p style="margin: 20px 0 0 0; font-size: 14px; color: #7ED957; font-weight: 600; position: relative; z-index: 1;">
-        <span style="background: rgba(126,217,87,0.1); border: 1px solid rgba(126,217,87,0.3); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">⏱️ 3 minutes</span>
-        <span style="background: rgba(126,217,87,0.1); border: 1px solid rgba(126,217,87,0.3); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">📊 Instant results</span>
-        <span style="background: rgba(126,217,87,0.1); border: 1px solid rgba(126,217,87,0.3); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">🤖 AI-powered insights</span>
-    </p>
-</div>
-""", unsafe_allow_html=True)
+_header3_path = pathlib.Path(__file__).parent / "Picture3.png"
+st.image(str(_header3_path), use_container_width=True)
 
 if not st.session_state.quiz_submitted:
 
@@ -240,8 +223,8 @@ if not st.session_state.quiz_submitted:
     # ============================================================
     st.markdown('<p class="section-label">📊 AI Maturity Assessment</p>', unsafe_allow_html=True)
     st.markdown("""
-    <div style="background: #f8fafc; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-        <span style="font-size: 14px; color: #475569;">💡 Answer honestly based on where your organization is <em>today</em>, not where you aspire to be.</span>
+    <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
+        <span style="font-size: 14px; color: #e0e0e0;">💡 Answer honestly based on where your organization is <em>today</em>, not where you aspire to be.</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -394,8 +377,8 @@ if not st.session_state.quiz_submitted:
     st.markdown(f"""
     <div class="progress-bar-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 13px; font-weight: 600; color: #1e293b;">📝 Progress</span>
-            <span style="font-size: 13px; font-weight: 700; color: #059669;">{answered_count}/10 questions answered</span>
+        <span style="font-size: 13px; font-weight: 600; color: #7ED957;">📝 Progress</span>
+        <span style="font-size: 13px; font-weight: 700; color: #7ED957;">{answered_count}/10 questions answered</span>
         </div>
         <div style="background: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden;">
             <div style="background: linear-gradient(90deg, #10b981, #059669); width: {progress_pct}%; height: 100%; border-radius: 8px; transition: width 0.3s ease;"></div>
@@ -410,9 +393,9 @@ if not st.session_state.quiz_submitted:
     with col2:
         st.markdown("""
         <div style="text-align: center; margin-bottom: 12px;">
-            <span style="font-size: 13px; color: #64748b;">🔒 Your responses are confidential</span>
-            <p style="font-size: 11px; color: #94a3b8; margin: 8px 0 0 0; line-height: 1.5; max-width: 500px; display: inline-block;">
-                By submitting this survey, you consent to the use of your information to assess your organisation's AI readiness and to support follow-up activities, engagement, and the provision of relevant Deloitte services. To view our Privacy statement, please visit <a href="https://www.deloitte.com/southeast-asia/en/legal/privacy.html?icid=bottom_privacy" target="_blank" style="color: #059669;">Deloitte Privacy</a>.
+            <span style="font-size: 13px; color: #7ED957;">🔒 Your responses are confidential</span>
+            <p style="font-size: 11px; color: #7ED957; opacity: 0.8; margin: 8px 0 0 0; line-height: 1.5; max-width: 500px; display: inline-block;">
+                By submitting this survey, you consent to the use of your information to assess your organisation's AI readiness and to support follow-up activities, engagement, and the provision of relevant Deloitte services. To view our Privacy statement, please visit <a href="https://www.deloitte.com/southeast-asia/en/legal/privacy.html?icid=bottom_privacy" target="_blank" style="color: #7ED957;">Deloitte Privacy</a>.
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -506,11 +489,16 @@ else:
 
         # Display results hero
         st.markdown(f"""
-        <div class="result-hero">
-            <p style="font-size: 56px; margin: 0 0 4px 0;">{level_icon}</p>
-            <p style="font-size: 14px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px 0;">Your AI Maturity Level</p>
-            <p style="font-size: 52px; font-weight: 800; color: {level_color}; margin: 0 0 12px 0;">{level}</p>
-            <p style="font-size: 16px; color: #475569; margin: 0; max-width: 600px; display: inline-block; line-height: 1.6;">{level_desc}</p>
+        <div class="result-hero" style="background: linear-gradient(135deg, rgba(126,217,87,0.08) 0%, rgba(0,0,0,0.5) 50%, rgba(126,217,87,0.05) 100%); border: 1px solid rgba(126,217,87,0.4); padding: 60px 48px;">
+            <p style="font-size: 64px; margin: 0 0 8px 0; filter: drop-shadow(0 0 12px rgba(126,217,87,0.4));">{level_icon}</p>
+            <p style="font-size: 12px; color: #7ED957; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 12px 0;">Your AI Maturity Level</p>
+            <p style="font-size: 56px; font-weight: 900; color: #7ED957; margin: 0 0 16px 0; text-shadow: 0 0 20px rgba(126,217,87,0.3);">{level}</p>
+            <p style="font-size: 16px; color: rgba(255,255,255,0.8); margin: 0; max-width: 600px; display: inline-block; line-height: 1.7;">{level_desc}</p>
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <span style="font-size: 36px; font-weight: 900; color: #ffffff;">{total_maturity}</span>
+                <span style="font-size: 18px; color: #94a3b8;">/{max_maturity} points</span>
+                <span style="font-size: 14px; color: #7ED957; margin-left: 16px; font-weight: 600;">({pct:.0f}%)</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -519,27 +507,39 @@ else:
         col1, col2, col3 = st.columns(3)
 
         with col1:
+            strat_pct_val = int(strategy_score / 8 * 100)
             st.markdown(f"""
-            <div class="score-card" style="background: #ecfdf5; border: 1px solid #a7f3d0;">
-                <div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
-                <div style="font-size: 11px; color: #059669; font-weight: 700; text-transform: uppercase;">Strategy & Leadership</div>
-                <div style="font-size: 32px; font-weight: 800; color: #1e293b; margin-top: 8px;">{strategy_score}<span style="font-size: 16px; color: #94a3b8;">/8</span></div>
+            <div class="score-card" style="border: 1px solid rgba(126,217,87,0.3); background: linear-gradient(180deg, rgba(126,217,87,0.05) 0%, rgba(0,0,0,0.3) 100%);">
+                <div style="font-size: 32px; margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(126,217,87,0.3));">🎯</div>
+                <div style="font-size: 11px; color: #7ED957; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Strategy & Leadership</div>
+                <div style="font-size: 38px; font-weight: 900; color: #ffffff; margin-top: 12px;">{strategy_score}<span style="font-size: 16px; color: #94a3b8;">/8</span></div>
+                <div style="margin-top: 12px; background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; overflow: hidden;">
+                    <div style="background: #7ED957; width: {strat_pct_val}%; height: 100%; border-radius: 6px;"></div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
         with col2:
+            gov_pct_val = int(governance_score / 12 * 100)
             st.markdown(f"""
-            <div class="score-card" style="background: #f0f9ff; border: 1px solid #bae6fd;">
-                <div style="font-size: 24px; margin-bottom: 8px;">🛡️</div>
-                <div style="font-size: 11px; color: #0ea5e9; font-weight: 700; text-transform: uppercase;">Governance & Talent</div>
-                <div style="font-size: 32px; font-weight: 800; color: #1e293b; margin-top: 8px;">{governance_score}<span style="font-size: 16px; color: #94a3b8;">/12</span></div>
+            <div class="score-card" style="border: 1px solid rgba(126,217,87,0.3); background: linear-gradient(180deg, rgba(126,217,87,0.05) 0%, rgba(0,0,0,0.3) 100%);">
+                <div style="font-size: 32px; margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(126,217,87,0.3));">🛡️</div>
+                <div style="font-size: 11px; color: #7ED957; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Governance & Talent</div>
+                <div style="font-size: 38px; font-weight: 900; color: #ffffff; margin-top: 12px;">{governance_score}<span style="font-size: 16px; color: #94a3b8;">/12</span></div>
+                <div style="margin-top: 12px; background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; overflow: hidden;">
+                    <div style="background: #7ED957; width: {gov_pct_val}%; height: 100%; border-radius: 6px;"></div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
         with col3:
+            data_pct_val = int(data_tech_score / 8 * 100)
             st.markdown(f"""
-            <div class="score-card" style="background: #ecfdf5; border: 1px solid #a7f3d0;">
-                <div style="font-size: 24px; margin-bottom: 8px;">⚙️</div>
-                <div style="font-size: 11px; color: #10b981; font-weight: 700; text-transform: uppercase;">Data & Technology</div>
-                <div style="font-size: 32px; font-weight: 800; color: #1e293b; margin-top: 8px;">{data_tech_score}<span style="font-size: 16px; color: #94a3b8;">/8</span></div>
+            <div class="score-card" style="border: 1px solid rgba(126,217,87,0.3); background: linear-gradient(180deg, rgba(126,217,87,0.05) 0%, rgba(0,0,0,0.3) 100%);">
+                <div style="font-size: 32px; margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(126,217,87,0.3));">⚙️</div>
+                <div style="font-size: 11px; color: #7ED957; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Data & Technology</div>
+                <div style="font-size: 38px; font-weight: 900; color: #ffffff; margin-top: 12px;">{data_tech_score}<span style="font-size: 16px; color: #94a3b8;">/8</span></div>
+                <div style="margin-top: 12px; background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; overflow: hidden;">
+                    <div style="background: #7ED957; width: {data_pct_val}%; height: 100%; border-radius: 6px;"></div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -562,9 +562,9 @@ else:
         for ring_pct in [25, 50, 75, 100]:
             ring_r = radius * ring_pct / 100
             pts = " ".join([f"{cx + ring_r * m.cos(m.radians(a))},{cy + ring_r * m.sin(m.radians(a))}" for a in angles])
-            grid_svg += f'<polygon points="{pts}" fill="none" stroke="#e2e8f0" stroke-width="1"/>'
+            grid_svg += f'<polygon points="{pts}" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>'
 
-        axes_svg = "".join([f'<line x1="{cx}" y1="{cy}" x2="{p[0]}" y2="{p[1]}" stroke="#e2e8f0" stroke-width="1"/>' for p in axis_pts])
+        axes_svg = "".join([f'<line x1="{cx}" y1="{cy}" x2="{p[0]}" y2="{p[1]}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>' for p in axis_pts])
         data_polygon = " ".join([f"{p[0]},{p[1]}" for p in data_pts])
 
         label_offset = 18
@@ -581,18 +581,18 @@ else:
                 anchor = "start"
             elif "Data" in name:
                 anchor = "end"
-            labels_svg += f'<text x="{lx}" y="{ly}" text-anchor="{anchor}" font-size="11" font-weight="bold" fill="#1e293b">{name}</text>'
-            labels_svg += f'<text x="{lx}" y="{ly + 14}" text-anchor="{anchor}" font-size="11" font-weight="600" fill="#059669">{val}</text>'
+            labels_svg += f'<text x="{lx}" y="{ly}" text-anchor="{anchor}" font-size="11" font-weight="bold" fill="#ffffff">{name}</text>'
+            labels_svg += f'<text x="{lx}" y="{ly + 14}" text-anchor="{anchor}" font-size="11" font-weight="600" fill="#7ED957">{val}</text>'
 
         radar_svg = f"""
-        <div style="display: flex; justify-content: center; margin: 16px 0;">
+        <div style="display: flex; justify-content: center; margin: 16px 0; padding: 24px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
             <svg width="320" height="340" viewBox="0 0 300 310" xmlns="http://www.w3.org/2000/svg">
                 {grid_svg}
                 {axes_svg}
-                <polygon points="{data_polygon}" fill="rgba(16, 185, 129, 0.15)" stroke="#059669" stroke-width="2.5"/>
-                <circle cx="{data_pts[0][0]}" cy="{data_pts[0][1]}" r="5" fill="#059669"/>
-                <circle cx="{data_pts[1][0]}" cy="{data_pts[1][1]}" r="5" fill="#059669"/>
-                <circle cx="{data_pts[2][0]}" cy="{data_pts[2][1]}" r="5" fill="#059669"/>
+                <polygon points="{data_polygon}" fill="rgba(126, 217, 87, 0.15)" stroke="#7ED957" stroke-width="2.5"/>
+                <circle cx="{data_pts[0][0]}" cy="{data_pts[0][1]}" r="6" fill="#7ED957" style="filter: drop-shadow(0 0 6px rgba(126,217,87,0.6));"/>
+                <circle cx="{data_pts[1][0]}" cy="{data_pts[1][1]}" r="6" fill="#7ED957" style="filter: drop-shadow(0 0 6px rgba(126,217,87,0.6));"/>
+                <circle cx="{data_pts[2][0]}" cy="{data_pts[2][1]}" r="6" fill="#7ED957" style="filter: drop-shadow(0 0 6px rgba(126,217,87,0.6));"/>
                 {labels_svg}
             </svg>
         </div>
@@ -602,13 +602,13 @@ else:
         # Maturity bar
         st.markdown("### 📏 Overall Maturity Score")
         st.markdown(f"""
-        <div style="margin: 16px 0; background: white; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+        <div style="margin: 16px 0; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span style="font-size: 14px; color: #64748b; font-weight: 600;">Progress</span>
-                <span style="font-size: 14px; font-weight: 700; color: {level_color};">{total_maturity}/{max_maturity} ({pct:.0f}%)</span>
+                <span style="font-size: 14px; color: #e0e0e0; font-weight: 600;">Progress</span>
+                <span style="font-size: 14px; font-weight: 700; color: #7ED957;">{total_maturity}/{max_maturity} ({pct:.0f}%)</span>
             </div>
-            <div style="background: #e2e8f0; border-radius: 10px; height: 16px; overflow: hidden;">
-                <div style="background: linear-gradient(90deg, #6ee7b7, #10b981, #059669); width: {pct}%; height: 100%; border-radius: 10px; transition: width 0.5s ease;"></div>
+            <div style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 16px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #7ED957, #6bc648); width: {pct}%; height: 100%; border-radius: 10px; transition: width 0.5s ease;"></div>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 8px;">
                 <span style="font-size: 11px; color: #94a3b8;">🔍 Exploring</span>
@@ -639,8 +639,8 @@ else:
                     st.markdown(f"""
                     <div class="peer-badge">
                         <span style="font-size: 28px;">🏅</span>
-                        <p style="font-size: 18px; font-weight: 800; color: #065f46; margin: 8px 0 4px 0;">You scored higher than {percentile}% of {industry_short} respondents</p>
-                        <p style="font-size: 13px; color: #047857; margin: 0;">Based on {total_peers} responses in your industry</p>
+<p style="font-size: 18px; font-weight: 800; color: #7ED957; margin: 8px 0 4px 0;">You scored higher than {percentile}% of {industry_short} respondents</p>
+<p style="font-size: 13px; color: #e0e0e0; margin: 0;">Based on {total_peers} responses in your industry</p>
                     </div>
                     """, unsafe_allow_html=True)
         except Exception:
@@ -667,8 +667,8 @@ else:
         for icon, title, desc, color in insights:
             st.markdown(f"""
             <div class="insight-card" style="border-left-color: {color};">
-                <div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">{icon} {title}</div>
-                <div style="font-size: 13px; color: #475569; line-height: 1.5;">{desc}</div>
+<div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">{icon} {title}</div>
+<div style="font-size: 13px; color: #e0e0e0; line-height: 1.5;">{desc}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -711,11 +711,11 @@ else:
             ai_insights = ai_result[0]["RESPONSE"] if ai_result else ""
             if ai_insights:
                 st.markdown("### 🤖 AI-Powered Holistic Analysis")
-                st.markdown('<span style="font-size: 12px; color: #059669; font-weight: 600;">✨ Powered by Snowflake Cortex</span>', unsafe_allow_html=True)
+                st.markdown('<span style="font-size: 12px; color: #7ED957; font-weight: 600;">✨ Powered by Snowflake Cortex</span>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div class="ai-card">
-                    <div style="font-size: 11px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">🧠 Cortex AI Analysis</div>
-                    <div style="font-size: 14px; color: #1e293b; line-height: 1.7;">{ai_insights}</div>
+                    <div style="font-size: 11px; color: #7ED957; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">🧠 Cortex AI Analysis</div>
+                    <div style="font-size: 14px; color: #e0e0e0; line-height: 1.7;">{ai_insights}</div>
                 </div>
                 """, unsafe_allow_html=True)
         except Exception as e:
@@ -740,8 +740,8 @@ else:
     st.markdown(f"""
     <div class="cta-card">
         <p style="font-size: 32px; margin: 0 0 8px 0;">{cta_icon}</p>
-        <p style="font-size: 17px; color: #1e293b; font-weight: 700; margin: 0 0 8px 0;">Recommended Next Step</p>
-        <p style="font-size: 15px; color: #475569; margin: 0; line-height: 1.6;">{cta}</p>
+<p style="font-size: 17px; color: #ffffff; font-weight: 700; margin: 0 0 8px 0;">Recommended Next Step</p>
+<p style="font-size: 15px; color: #e0e0e0; margin: 0; line-height: 1.6;">{cta}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -751,12 +751,12 @@ else:
     st.markdown(f"""
     <div class="respondent-card">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div><span style="font-size: 12px; color: #059669; font-weight: 600; text-transform: uppercase;">Name</span><br><span style="font-size: 14px; color: #1e293b;">{r.get('name', '')}</span></div>
-            <div><span style="font-size: 12px; color: #059669; font-weight: 600; text-transform: uppercase;">Email</span><br><span style="font-size: 14px; color: #1e293b;">{r.get('email', '')}</span></div>
-            <div><span style="font-size: 12px; color: #059669; font-weight: 600; text-transform: uppercase;">Company</span><br><span style="font-size: 14px; color: #1e293b;">{r.get('company', '')}</span></div>
-            <div><span style="font-size: 12px; color: #059669; font-weight: 600; text-transform: uppercase;">Role</span><br><span style="font-size: 14px; color: #1e293b;">{r.get('role', '')}</span></div>
-            <div><span style="font-size: 12px; color: #059669; font-weight: 600; text-transform: uppercase;">Industry</span><br><span style="font-size: 14px; color: #1e293b;">{r.get('industry', '')}</span></div>
-            <div><span style="font-size: 12px; color: #059669; font-weight: 600; text-transform: uppercase;">Biggest Blocker</span><br><span style="font-size: 14px; color: #1e293b;">{r.get('q8', '')} {r.get('q8_other', '')}</span></div>
+<div><span style="font-size: 12px; color: #7ED957; font-weight: 600; text-transform: uppercase;">Name</span><br><span style="font-size: 14px; color: #ffffff;">{r.get('name', '')}</span></div>
+<div><span style="font-size: 12px; color: #7ED957; font-weight: 600; text-transform: uppercase;">Email</span><br><span style="font-size: 14px; color: #ffffff;">{r.get('email', '')}</span></div>
+<div><span style="font-size: 12px; color: #7ED957; font-weight: 600; text-transform: uppercase;">Company</span><br><span style="font-size: 14px; color: #ffffff;">{r.get('company', '')}</span></div>
+<div><span style="font-size: 12px; color: #7ED957; font-weight: 600; text-transform: uppercase;">Role</span><br><span style="font-size: 14px; color: #ffffff;">{r.get('role', '')}</span></div>
+<div><span style="font-size: 12px; color: #7ED957; font-weight: 600; text-transform: uppercase;">Industry</span><br><span style="font-size: 14px; color: #ffffff;">{r.get('industry', '')}</span></div>
+<div><span style="font-size: 12px; color: #7ED957; font-weight: 600; text-transform: uppercase;">Biggest Blocker</span><br><span style="font-size: 14px; color: #ffffff;">{r.get('q8', '')} {r.get('q8_other', '')}</span></div>
         </div>
     </div>
     """, unsafe_allow_html=True)
