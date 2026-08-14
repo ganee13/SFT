@@ -54,73 +54,82 @@ def run_sql(query, params=None):
         finally:
             cur.close()
 
+# -- Header image --
+import base64
+import pathlib
+
+# Load background images as base64
+_header_img_path = pathlib.Path(__file__).parent / "Picture1.png"
+_bg_img_path = pathlib.Path(__file__).parent / "Picture2.png"
+if _header_img_path.exists():
+    _header_b64 = base64.b64encode(_header_img_path.read_bytes()).decode()
+else:
+    _header_b64 = ""
+if _bg_img_path.exists():
+    _bg_b64 = base64.b64encode(_bg_img_path.read_bytes()).decode()
+else:
+    _bg_b64 = ""
+
 # -- Custom CSS --
+_header_bg_css = f'background: #000000 url("data:image/png;base64,{_header_b64}") right center/contain no-repeat;' if _header_b64 else 'background: #000000;'
+_page_bg_css = f'background: #1a1a2e url("data:image/png;base64,{_bg_b64}") top center/cover no-repeat fixed;' if _bg_b64 else 'background: #1a1a2e;'
 st.markdown("""
 <style>
-    .stApp { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f0f9ff 100%); }
+    .stApp { """ + _page_bg_css + """ }
     [data-testid="stHeader"] { background: transparent; }
+    /* Make entire page scroll instead of inner container */
+    [data-testid="stAppViewContainer"] { overflow: visible; }
+    [data-testid="stMain"] { overflow: visible; }
+    .main .block-container { overflow: visible; max-width: 100%; }
+    section[data-testid="stSidebar"] { display: none; }
+    /* Override Streamlit text colors for dark background */
+    .stApp, .stApp p, .stApp span, .stApp label, .stApp div { color: #ffffff; }
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: #ffffff; }
+    .stApp .stMarkdown p { color: #e0e0e0; }
+    .stApp [data-testid="stWidgetLabel"] label { color: #ffffff !important; }
+    .stApp .stSelectbox label, .stApp .stTextInput label { color: #ffffff !important; }
+    .stApp .stRadio label { color: #e0e0e0 !important; }
+    .stApp .stRadio [data-testid="stMarkdownContainer"] p { color: #e0e0e0 !important; }
+    hr { border-color: rgba(255,255,255,0.15) !important; }
     .quiz-header {
-        background: linear-gradient(135deg, #10b981 0%, #059669 30%, #34d399 60%, #6ee7b7 100%);
-        background-size: 300% 300%;
-        animation: gradientShift 8s ease infinite;
-        border-radius: 24px; padding: 56px 40px; text-align: center;
+        background: transparent;
+        padding: 56px 40px; text-align: left;
         border: none; margin-bottom: 32px;
-        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.25);
         position: relative; overflow: hidden;
     }
     .quiz-header::before {
-        content: '';
-        position: absolute; top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-        animation: shimmer 6s linear infinite;
+        content: none;
     }
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    @keyframes shimmer {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
-    }
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
+    .quiz-header::after {
+        content: none;
     }
     .quiz-title {
-        font-size: 68px; font-weight: 900; color: #ffffff; margin: 0 0 14px 0;
+        font-size: 96px; font-weight: 900; color: #7ED957 !important; margin: 0 0 14px 0;
         text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        position: relative;
+        position: relative; z-index: 1;
     }
     .quiz-subtitle {
-        font-size: 19px; color: rgba(255,255,255,0.9); margin: 0; line-height: 1.6;
-        position: relative;
+        font-size: 19px; color: #7ED957 !important; margin: 0; line-height: 1.6;
+        position: relative; z-index: 1;
     }
     .section-label {
-        font-size: 13px; font-weight: 700; color: #059669; text-transform: uppercase;
+        font-size: 13px; font-weight: 700; color: #7ED957; text-transform: uppercase;
         letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 16px;
     }
     .question-card {
-        background: white; border-radius: 14px; padding: 24px;
-        border: 1px solid #e2e8f0; margin-bottom: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-        transition: box-shadow 0.2s ease;
+        background: transparent; border-radius: 14px; padding: 24px;
+        border: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px;
     }
     .question-card:hover {
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+        border-color: rgba(126, 217, 87, 0.3);
     }
     .question-num {
-        display: inline-block; background: #059669; color: white;
+        display: inline-block; background: #7ED957; color: #000000;
         width: 28px; height: 28px; border-radius: 50%; text-align: center;
         line-height: 28px; font-size: 13px; font-weight: 700; margin-right: 10px;
     }
     .question-text {
-        font-size: 15px; font-weight: 600; color: #1e293b; display: inline;
+        font-size: 15px; font-weight: 600; color: #ffffff; display: inline;
     }
     .dimension-tag {
         display: inline-block; font-size: 10px; font-weight: 600;
@@ -128,53 +137,53 @@ st.markdown("""
         text-transform: uppercase; letter-spacing: 0.5px;
     }
     .result-hero {
-        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%);
+        background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
         border-radius: 24px; padding: 48px; text-align: center;
-        border: 1px solid #6ee7b7; margin-bottom: 32px;
-        box-shadow: 0 4px 24px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(126, 217, 87, 0.3); margin-bottom: 32px;
     }
     .score-card {
         border-radius: 16px; padding: 24px; text-align: center;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
         transition: transform 0.2s ease;
     }
     .score-card:hover {
         transform: translateY(-2px);
     }
     .insight-card {
-        background: white; border-radius: 12px; padding: 16px 20px;
-        border-left: 4px solid #10b981; margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        background: rgba(0,0,0,0.3); border-radius: 12px; padding: 16px 20px;
+        border-left: 4px solid #7ED957; margin-bottom: 12px;
     }
     .cta-card {
-        background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+        background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
         border-radius: 20px; padding: 32px;
-        border: 1px solid #86efac; text-align: center;
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(126, 217, 87, 0.3); text-align: center;
     }
     .respondent-card {
-        background: white; border-radius: 16px; padding: 24px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        background: rgba(0,0,0,0.3); border-radius: 16px; padding: 24px;
+        border: 1px solid rgba(255,255,255,0.1);
     }
     .ai-card {
-        background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+        background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
         border-radius: 20px; padding: 28px;
-        border: 1px solid #6ee7b7; margin-top: 16px;
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(126, 217, 87, 0.3); margin-top: 16px;
     }
     .progress-bar-container {
-        background: white; border-radius: 12px; padding: 16px 24px;
-        border: 1px solid #e2e8f0; margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        background: rgba(0,0,0,0.3); border-radius: 12px; padding: 16px 24px;
+        border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
     }
     .peer-badge {
-        background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+        background: rgba(0,0,0,0.4);
         border-radius: 16px; padding: 20px 28px;
-        border: 1px solid #86efac; text-align: center;
-        box-shadow: 0 2px 12px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(126, 217, 87, 0.3); text-align: center;
         margin: 16px 0;
     }
+    [data-testid="stMetric"] {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px; padding: 1rem;
+    }
+    [data-testid="stMetric"] label { color: #7ED957 !important; }
+    [data-testid="stMetric"] [data-testid="stMetricValue"] { color: #ffffff !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -187,36 +196,12 @@ if 'responses' not in st.session_state:
 # -- Header --
 st.markdown("""
 <div class="quiz-header">
-    <div style="position: relative; animation: float 3s ease-in-out infinite;">
-        <svg width="72" height="72" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 12px;">
-            <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
-            <circle cx="32" cy="32" r="8" fill="rgba(255,255,255,0.9)">
-                <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="32" cy="14" r="4" fill="rgba(255,255,255,0.8)"/>
-            <circle cx="32" cy="50" r="4" fill="rgba(255,255,255,0.8)"/>
-            <circle cx="14" cy="32" r="4" fill="rgba(255,255,255,0.8)"/>
-            <circle cx="50" cy="32" r="4" fill="rgba(255,255,255,0.8)"/>
-            <circle cx="18" cy="18" r="3" fill="rgba(255,255,255,0.6)"/>
-            <circle cx="46" cy="18" r="3" fill="rgba(255,255,255,0.6)"/>
-            <circle cx="18" cy="46" r="3" fill="rgba(255,255,255,0.6)"/>
-            <circle cx="46" cy="46" r="3" fill="rgba(255,255,255,0.6)"/>
-            <line x1="32" y1="24" x2="32" y2="18" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
-            <line x1="32" y1="40" x2="32" y2="46" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
-            <line x1="24" y1="32" x2="18" y2="32" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
-            <line x1="40" y1="32" x2="46" y2="32" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
-            <line x1="26" y1="26" x2="21" y2="21" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-            <line x1="38" y1="26" x2="43" y2="21" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-            <line x1="26" y1="38" x2="21" y2="43" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-            <line x1="38" y1="38" x2="43" y2="43" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-        </svg>
-    </div>
     <p class="quiz-title">AI Readiness Assessment</p>
     <p class="quiz-subtitle">Understand where your organization stands on the AI maturity curve — and what to do next.</p>
-    <p style="margin: 20px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 600; position: relative;">
-        <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">⏱️ 3 minutes</span>
-        <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">📊 Instant results</span>
-        <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">🤖 AI-powered insights</span>
+    <p style="margin: 20px 0 0 0; font-size: 14px; color: #7ED957; font-weight: 600; position: relative; z-index: 1;">
+        <span style="background: rgba(126,217,87,0.1); border: 1px solid rgba(126,217,87,0.3); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">⏱️ 3 minutes</span>
+        <span style="background: rgba(126,217,87,0.1); border: 1px solid rgba(126,217,87,0.3); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">📊 Instant results</span>
+        <span style="background: rgba(126,217,87,0.1); border: 1px solid rgba(126,217,87,0.3); padding: 6px 14px; border-radius: 20px; margin: 0 4px;">🤖 AI-powered insights</span>
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -244,7 +229,8 @@ if not st.session_state.quiz_submitted:
             "A) Financial Services / Insurance",
             "B) Manufacturing / Industrial / Logistics",
             "C) Retail / Consumer / F&B",
-            "D) Public Sector / Healthcare / Other regulated"
+            "D) Public Sector / Healthcare / Other regulated",
+            "E) Others"
         ], index=None, placeholder="Select your industry...")
 
     st.markdown("---")
@@ -566,7 +552,7 @@ else:
         data_pct = data_tech_score / 8 * 100
 
         # SVG radar chart - equilateral triangle with 3 axes
-        cx, cy, radius = 150, 150, 120
+        cx, cy, radius = 150, 140, 110
         angles = [-90, 30, 150]
         axis_pts = [(cx + radius * m.cos(m.radians(a)), cy + radius * m.sin(m.radians(a))) for a in angles]
         data_pts = [(cx + radius * (v/100) * m.cos(m.radians(a)), cy + radius * (v/100) * m.sin(m.radians(a)))
@@ -600,7 +586,7 @@ else:
 
         radar_svg = f"""
         <div style="display: flex; justify-content: center; margin: 16px 0;">
-            <svg width="320" height="320" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+            <svg width="320" height="340" viewBox="0 0 300 310" xmlns="http://www.w3.org/2000/svg">
                 {grid_svg}
                 {axes_svg}
                 <polygon points="{data_polygon}" fill="rgba(16, 185, 129, 0.15)" stroke="#059669" stroke-width="2.5"/>
@@ -719,7 +705,7 @@ else:
         )
 
         try:
-            escaped_prompt = prompt.replace("'", "''")
+            escaped_prompt = prompt.replace("'", "''").replace("\\", "\\\\")
             sql_query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('mistral-large2', '{escaped_prompt}') AS RESPONSE"
             ai_result = run_sql(sql_query)
             ai_insights = ai_result[0]["RESPONSE"] if ai_result else ""
@@ -732,8 +718,8 @@ else:
                     <div style="font-size: 14px; color: #1e293b; line-height: 1.7;">{ai_insights}</div>
                 </div>
                 """, unsafe_allow_html=True)
-        except Exception:
-            pass
+        except Exception as e:
+            st.warning(f"⚠️ AI analysis unavailable: {e}")
 
     # CTA based on Q10
     st.markdown("---")
