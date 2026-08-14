@@ -234,14 +234,14 @@ if not st.session_state.quiz_submitted:
     st.markdown('<p class="section-label">📊 AI Maturity Assessment</p>', unsafe_allow_html=True)
     st.markdown("""
     <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
-        <span style="font-size: 14px; color: #e0e0e0;">💡 Answer honestly based on where your organization is <em>today</em>, not where you aspire to be.</span>
+        <span style="font-size: 14px; color: #e0e0e0;">💡 Answer honestly based on where your organisation is <em>today</em>, not where you aspire to be.</span>
     </div>
     """, unsafe_allow_html=True)
 
     questions = [
         {
             "num": 1, "icon": "🎯",
-            "text": "How would you describe your organization's current relationship with AI?",
+            "text": "How would you describe your organisation's current relationship with AI?",
             "options": [
                 "A) Still evaluating",
                 "B) A few experiments / POCs",
@@ -253,19 +253,19 @@ if not st.session_state.quiz_submitted:
         },
         {
             "num": 2, "icon": "🏛️",
-            "text": "How is AI ownership structured within your organization?",
+            "text": "How is AI ownership structured within your organisation?",
             "options": [
                 "A) No clear owner",
                 "B) Individual champions, uncoordinated",
                 "C) Dedicated team, siloed by department",
-                "D) Centralized AI CoE, enterprise-wide"
+                "D) Centralised AI CoE, enterprise-wide"
             ],
             "dimension": "Governance & Talent",
             "dim_color": "#0ea5e9", "dim_bg": "#f0f9ff"
         },
         {
             "num": 3, "icon": "🚀",
-            "text": "How many AI use cases does your organization currently have live in production (not pilots)?",
+            "text": "How many AI use cases does your organisation currently have live in production (not pilots)?",
             "options": [
                 "A) None",
                 "B) 1",
@@ -277,7 +277,7 @@ if not st.session_state.quiz_submitted:
         },
         {
             "num": 4, "icon": "🗄️",
-            "text": "How would you rate your organization's data readiness?",
+            "text": "How would you rate your organisation's data readiness?",
             "options": [
                 "A) Scattered / hard to access",
                 "B) Usable but depends who you ask",
@@ -301,19 +301,19 @@ if not st.session_state.quiz_submitted:
         },
         {
             "num": 6, "icon": "👥",
-            "text": "Does your organization have in-house skills to build/deploy/maintain AI without external help?",
+            "text": "Does your organisation have in-house skills to build/deploy/maintain AI without external help?",
             "options": [
                 "A) No dedicated talent",
                 "B) Small team, stretched thin",
                 "C) Dedicated team, skill gaps",
-                "D) Fully staffed, specialized"
+                "D) Fully staffed, specialised"
             ],
             "dimension": "Governance & Talent",
             "dim_color": "#0ea5e9", "dim_bg": "#f0f9ff"
         },
         {
             "num": 7, "icon": "📈",
-            "text": "How does your organization measure the success or ROI of AI initiatives?",
+            "text": "How does your organisation measure the success or ROI of AI initiatives?",
             "options": [
                 "A) Don't formally measure",
                 "B) Track usage, not impact",
@@ -432,13 +432,31 @@ if not st.session_state.quiz_submitted:
 # RESULTS PAGE
 # ============================================================
 else:
-    # Scroll to top when results load
+    # Scroll to top when results load using CSS trick
+    st.markdown("""
+    <style>
+        /* Force scroll to top on results page */
+        [data-testid="stAppViewContainer"] {
+            scroll-behavior: auto;
+        }
+    </style>
+    <iframe src="javascript:window.parent.document.querySelector('section.main').scrollTo(0,0)" style="display:none;"></iframe>
+    """, unsafe_allow_html=True)
+    
     import streamlit.components.v1 as components
     components.html(
-        """<script>
-        window.parent.document.querySelector('section.main').scrollTop = 0;
-        window.parent.document.querySelector('[data-testid="stAppViewContainer"]').scrollTop = 0;
-        </script>""",
+        """
+        <script>
+            // Try multiple scroll targets
+            var main = window.parent.document.querySelector('section.main');
+            if (main) main.scrollTop = 0;
+            var container = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+            if (container) container.scrollTop = 0;
+            var block = window.parent.document.querySelector('.block-container');
+            if (block) block.scrollIntoView({behavior: 'instant'});
+            window.parent.scrollTo(0, 0);
+        </script>
+        """,
         height=0
     )
 
@@ -468,7 +486,7 @@ else:
         level = "Exploring"
         level_color = "#64748b"
         level_icon = "🔍"
-        level_desc = "Your organization is in early stages of AI adoption. Focus on identifying high-value use cases and building foundational data capabilities."
+        level_desc = "Your organisation is in early stages of AI adoption. Focus on identifying high-value use cases and building foundational data capabilities."
     elif pct < 55:
         level = "Experimenting"
         level_color = "#f59e0b"
@@ -483,7 +501,7 @@ else:
         level = "Leading"
         level_color = "#10b981"
         level_icon = "🏆"
-        level_desc = "AI is embedded in your strategy across functions. Focus on optimization, advanced governance, and competitive differentiation."
+        level_desc = "AI is embedded in your strategy across functions. Focus on optimisation, advanced governance, and competitive differentiation."
 
     # Save to Snowflake table
     try:
@@ -505,7 +523,7 @@ else:
         pass
 
     # Animated loading for Cortex (spinner)
-    with st.spinner("🔍 Analyzing your responses with AI..."):
+    with st.spinner("🔍 Analysing your responses with AI..."):
 
         # Display results hero
         st.markdown(f"""
@@ -673,7 +691,7 @@ else:
         if score_answer(r.get("q1", "")) >= 3 and score_answer(r.get("q7", "")) <= 2:
             insights.append(("⚠️", "Ambition-Measurement Gap", "You rate AI maturity highly but don't formally measure ROI. Consider establishing success metrics before scaling further.", "#f59e0b"))
         if score_answer(r.get("q3", "")) >= 3 and score_answer(r.get("q5", "")) <= 2:
-            insights.append(("⚠️", "Scaling Without Governance", "You have production AI but limited governance. This creates risk as you scale — prioritize a formal AI risk framework.", "#f59e0b"))
+            insights.append(("⚠️", "Scaling Without Governance", "You have production AI but limited governance. This creates risk as you scale — prioritise a formal AI risk framework.", "#f59e0b"))
         if score_answer(r.get("q1", "")) >= 3 and score_answer(r.get("q4", "")) <= 2:
             insights.append(("⚠️", "Ambition Outrunning Data", "Your AI aspirations exceed your data foundation. Invest in data governance before adding more AI use cases.", "#f59e0b"))
         if score_answer(r.get("q2", "")) <= 1:
