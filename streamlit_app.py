@@ -186,6 +186,82 @@ st.markdown("""
     .stDownloadButton > button:hover {
         background-color: #6bc648 !important;
     }
+    /* Print styles for PDF export */
+    @media print {
+        /* Hide Streamlit UI chrome */
+        [data-testid="stHeader"], [data-testid="stSidebar"],
+        [data-testid="stToolbar"], .stDeployButton,
+        .stDownloadButton, .print-hide,
+        iframe, footer, header, .stButton,
+        [data-testid="stDecoration"], [data-testid="stStatusWidget"] { 
+            display: none !important; 
+        }
+        /* Page setup */
+        @page { margin: 1.5cm; size: A4; }
+        body, .stApp { 
+            background: white !important; 
+            color: #1e293b !important;
+        }
+        /* Hide URL in header/footer of printed page */
+        @page { margin-top: 1.5cm; margin-bottom: 1.5cm; }
+        @page :first { margin-top: 1.5cm; }
+        .block-container { 
+            padding: 0 !important; 
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+        /* Prevent page breaks inside cards */
+        .result-hero, .score-card, .insight-card, .ai-card,
+        .cta-card, .respondent-card, .peer-badge,
+        [data-testid="column"] {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+        /* Fix dark backgrounds for print */
+        .result-hero {
+            background: #f0fdf4 !important;
+            border: 2px solid #86efac !important;
+        }
+        .score-card {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        .insight-card {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-left: 4px solid #10b981 !important;
+        }
+        .ai-card {
+            background: #f0fdf4 !important;
+            border: 1px solid #86efac !important;
+        }
+        .cta-card {
+            background: #f0f9ff !important;
+            border: 1px solid #bfdbfe !important;
+        }
+        .respondent-card {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        .peer-badge {
+            background: #ecfdf5 !important;
+            border: 1px solid #86efac !important;
+        }
+        /* Make all text dark for readability */
+        p, span, div, h1, h2, h3, h4, label {
+            color: #1e293b !important;
+        }
+        /* Preserve colors in charts and badges */
+        svg { print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
+        * { 
+            color-adjust: exact !important; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        /* Clean spacing */
+        .stMarkdown { margin-bottom: 8px !important; }
+        hr { border-color: #e2e8f0 !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -800,11 +876,16 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Download Results ---
+    # --- Export Results ---
     st.markdown("---")
-    st.markdown("### 📥 Export Results")
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 16px;">
+        <p style="font-size: 18px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">📥 Export Your Results</p>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0;">Save your assessment for future reference or share with your team</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Generate plain-text report (no external dependencies)
+    # Generate plain-text report
     ai_text_for_report = st.session_state.get("ai_insights_text", "")
     report_lines = [
         "=" * 50,
@@ -856,9 +937,35 @@ else:
 
     report_text = "\n".join(report_lines)
 
-    st.download_button(
-        label="📄 Download Results",
-        data=report_text,
-        file_name=f"AI_Readiness_{r.get('name', 'Report').replace(' ', '_')}.txt",
-        mime="text/plain"
-    )
+    col_dl1, col_dl2 = st.columns(2)
+    with col_dl1:
+        st.download_button(
+            label="📄 Download as Text",
+            data=report_text,
+            file_name=f"AI_Readiness_{r.get('name', 'Report').replace(' ', '_')}.txt",
+            mime="text/plain"
+        )
+    with col_dl2:
+        import streamlit.components.v1 as components
+        components.html(
+            """
+            <button onclick="window.parent.print()" style="
+                width: 100%;
+                padding: 10px 20px;
+                background-color: #7ED957;
+                color: #000000;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+            ">📑 Save as PDF</button>
+            """,
+            height=45
+        )
+
+    st.markdown("""
+    <p style="text-align: center; font-size: 11px; color: #64748b; margin-top: 8px;">
+        💡 <strong>PDF tip:</strong> In the print dialog, expand "More settings" and uncheck "Headers and footers" to remove the URL from the output.
+    </p>
+    """, unsafe_allow_html=True)
